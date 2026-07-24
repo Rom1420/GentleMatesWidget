@@ -1,4 +1,4 @@
-<h1 align="center">Gentle Mates — Widget iOS « Prochains matchs »</h1>
+<h1 align="center">Gentle Mates · Widget iOS « Prochains matchs »</h1>
 
 <p align="center">
   <img src="docs/demo.gif" alt="Démo du widget Gentle Mates" width="300">
@@ -15,7 +15,7 @@
 </p>
 
 > **Preuve de concept, mais prête pour la vraie vie.** Les données sont mockées aujourd'hui, mais toute
-> l'architecture est faite pour brancher la vraie API M8 en **remplaçant une seule classe** — rien d'autre.
+> l'architecture est faite pour brancher la vraie API M8 en **remplaçant une seule classe**, rien d'autre.
 
 ## Le pourquoi
 
@@ -24,18 +24,18 @@ l'app ni fouiller Twitter. Un coup d'œil, je sais quand joue l'équipe. Mes pot
 tout le temps.
 
 L'app officielle Gentle Mates est top pour le reste, mais **il n'y a pas de widget**. Alors j'en ai fait
-un — d'abord pour nous, et pour montrer concrètement à quoi ça pourrait ressembler.
+un, d'abord pour nous, et pour montrer concrètement à quoi ça pourrait ressembler.
 
 ## On n'est pas les seuls à le vouloir
 
 Ce n'est pas juste mon avis : la demande revient **noir sur blanc dans les avis App Store** de l'app 🇫🇷 :
 
-> ⭐️⭐️⭐️⭐️⭐️ **Twy-kse** — *« Géniale mais quelques fonctionnalités à ajouter »*
+> ⭐️⭐️⭐️⭐️⭐️ **Twy-kse** · *« Géniale mais quelques fonctionnalités à ajouter »*
 > « Je regrette qu'elle ne profite pas plus des fonctionnalités Apple comme les **Widget**, pour par
 > exemple suivre les prochains matchs ou les activités en direct lors d'un match. Avec ces petits ajouts
 > elle serait parfaite 😍 »
 
-> ⭐️⭐️⭐️⭐️⭐️ **Le_Codeur_Faussaire** — *« La màj de l'appli est pas mal ! »*
+> ⭐️⭐️⭐️⭐️⭐️ **Le_Codeur_Faussaire** · *« La màj de l'appli est pas mal ! »*
 > « Il manque encore une chose : **un widget du calendrier des matchs**. J'ai mon calendrier perso en
 > widget et j'aimerais bien avoir celui des matchs aussi. »
 
@@ -46,9 +46,9 @@ Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accue
 ## Aperçu
 
 <p align="center">
-  <img src="docs/widget-medium.png" alt="Widget medium — 7 prochains jours" width="46%">
+  <img src="docs/widget-medium.png" alt="Widget medium · 7 prochains jours" width="46%">
   &nbsp;&nbsp;
-  <img src="docs/widget-small.png" alt="Widget small — 3 jours" width="46%">
+  <img src="docs/widget-small.png" alt="Widget small · 3 jours" width="46%">
 </p>
 
 <p align="center"><em>medium = 7 prochains jours · small = 3 prochains jours · le match en cours a une bordure aux couleurs du jeu.</em></p>
@@ -74,7 +74,7 @@ C'est le cœur du projet : **la source de données est totalement isolée du res
                                                     ┌─────────────┴──────────────┐
                                                     ▼                            ▼
                                          MockMatchesProvider          GentleMatesAPIProvider
-                                         (données factices — actif)   (stub → vraie API M8)
+                                         (données factices · actif)   (stub → vraie API M8)
                                                     ▲
                                                     │  choisi à un seul endroit
                                              ProviderFactory.makeProvider()
@@ -89,10 +89,10 @@ Le widget, la timeline et les vues ne connaissent **que le protocole** `MatchesP
 Et **pas besoin de backend** : le calendrier des matchs est une donnée publique (déjà affichée sans
 compte dans l'app), donc tout reste côté client.
 
-## Brancher une vraie API — en 4 étapes
+## Brancher une vraie API en 4 étapes
 
 1. **Implémenter** `GentleMatesAPIProvider.fetchUpcomingMatches()`
-   ([fichier](GentleMatesWidgetExtension/Providers/GentleMatesAPIProvider.swift)) — un exemple complet
+   ([fichier](GentleMatesWidgetExtension/Providers/GentleMatesAPIProvider.swift)) : un exemple complet
    de requête est déjà en commentaire.
 2. **Mapper** le JSON réel vers le contrat stable [`Match`](GentleMatesWidgetExtension/Models/Match.swift)
    (fonction `map(_:)` esquissée).
@@ -120,7 +120,7 @@ Les vues se prévisualisent aussi via les `#Preview` de
 
 ## Stack & structure
 
-**SwiftUI · WidgetKit · iOS 17+** — pas de dépendance externe.
+**SwiftUI · WidgetKit · iOS 17+**, pas de dépendance externe.
 
 ```
 GentleMatesWidget.xcodeproj
