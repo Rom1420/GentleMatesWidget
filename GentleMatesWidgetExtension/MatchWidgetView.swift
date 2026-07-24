@@ -128,9 +128,8 @@ private struct CalendarSlot: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 4)
-        .padding(.horizontal, 3)
+        // Hauteur fixe : toutes les boxes identiques, qu'un jour ait 1 ou plusieurs matchs.
+        .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34)
         .background(
             RoundedRectangle(cornerRadius: 6)
                 .fill(GameStyle.color(for: match.game).opacity(0.18))
