@@ -19,16 +19,15 @@
 
 ## Le pourquoi
 
-Ça fait un moment que je rêve d'avoir les **prochains matchs M8 sur mon écran d'accueil**, sans ouvrir
-l'app ni fouiller Twitter. Un coup d'œil, je sais quand joue l'équipe. Mes potes fans aussi en parlent
-tout le temps.
+Ça fait un moment que je rêve d'avoir les **prochains matchs de M8 sur mon écran d'accueil**, sans ouvrir
+l'app ni fouiller Twitter. Un coup d'œil, je sais quand joue l'équipe. Mes amis en parlent souvent aussi.
 
 L'app officielle Gentle Mates est top pour le reste, mais **il n'y a pas de widget**. Alors j'en ai fait
-un, d'abord pour nous, et pour montrer concrètement à quoi ça pourrait ressembler.
+un, d'abord pour tester, et pour montrer concrètement à quoi ça pourrait ressembler.
 
 ## On n'est pas les seuls à le vouloir
 
-Ce n'est pas juste mon avis : la demande revient **noir sur blanc dans les avis App Store** de l'app 🇫🇷 :
+Ce n'est pas juste mon avis : la demande revient **dans les avis App Store** de l'app 🇫🇷 :
 
 > ⭐️⭐️⭐️⭐️⭐️ **Twy-kse** · *« Géniale mais quelques fonctionnalités à ajouter »*
 > « Je regrette qu'elle ne profite pas plus des fonctionnalités Apple comme les **Widget**, pour par
@@ -41,7 +40,7 @@ Ce n'est pas juste mon avis : la demande revient **noir sur blanc dans les avis 
 
 *(Avis publics sur l'App Store fr de l'app « Gentle Mates », consultés en juillet 2026.)*
 
-Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accueil. C'est exactement ce que fait ce widget.
+Bref : les fans veulent voir les matchs, sur leur écran d'accueil. C'est exactement ce que fait ce widget.
 
 ## Aperçu
 
@@ -61,6 +60,8 @@ Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accue
 - 📐 **2 tailles** : *small* (3 prochains jours) et *medium* (7 prochains jours).
 - 🎨 Couleurs et pictogrammes **par jeu** (Valorant, Rocket League, CS2, Fortnite, TFT…), centralisés
   dans un fichier de design tokens.
+
+> J'ai pris pas mal de liberté et je me suis limité à du très basique mais ça peut être plus avancée.
 
 ## Comment ça s'intègre chez M8 (plus tard)
 
@@ -86,9 +87,6 @@ Le widget, la timeline et les vues ne connaissent **que le protocole** `MatchesP
 > esquissée), on mappe le JSON réel vers `Match`, et on change une ligne dans `ProviderFactory`.
 > Aucune vue, aucune timeline à retoucher.**
 
-Et **pas besoin de backend** : le calendrier des matchs est une donnée publique (déjà affichée sans
-compte dans l'app), donc tout reste côté client.
-
 ## Brancher une vraie API en 4 étapes
 
 1. **Implémenter** `GentleMatesAPIProvider.fetchUpcomingMatches()`
@@ -102,8 +100,7 @@ compte dans l'app), donc tout reste côté client.
 
 ```swift
 static func makeProvider() -> MatchesProvider {
-    // MockMatchesProvider()      // ← commenter
-    GentleMatesAPIProvider()      // ← décommenter
+    GentleMatesAPIProvider()      
 }
 ```
 
@@ -117,6 +114,16 @@ static func makeProvider() -> MatchesProvider {
 Le widget tourne sur `MockMatchesProvider` : aucune configuration, aucun réseau, aucun backend.
 Les vues se prévisualisent aussi via les `#Preview` de
 [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift).
+
+### Pas envie d'ouvrir Xcode ? (j'ai pas de Mac 😢)
+
+**Télécharger le dernier build**
+
+[GentleMatesWidget-simulator-app.zip](https://github.com/Rom1420/GentleMatesWidget/actions/runs/30131630178/artifacts/8611315134)
+
+1. Téléchargez l'archive.
+2. Décompressez-la.
+3. Importez le `.app` dans un simulateur iOS ou sur Appetize.io.
 
 ## Stack & structure
 
@@ -159,4 +166,4 @@ pictogrammes de jeux appartiennent à **Gentle Mates / leurs ayants droit** et n
 pour cette démo. Les données affichées sont **fictives** (mock). Si un ayant droit souhaite un
 changement, il suffit de me contacter.
 
-*M8 si tu me lis : l'archi est prête, y'a plus qu'à brancher l'API 👀*
+*M8 si tu me lis : tout est prêt, y'a plus qu'à brancher l'API 👀*
