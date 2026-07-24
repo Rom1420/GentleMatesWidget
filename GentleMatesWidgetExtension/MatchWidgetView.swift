@@ -112,10 +112,17 @@ private struct DayColumn: View {
 private struct CalendarSlot: View {
     let match: Match
 
+    /// Heure toujours en 24h (`HH:mm`), quelle que soit la locale de l'appareil.
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter
+    }()
+
     var body: some View {
         VStack(spacing: 2) {
             GameLogo(game: match.game, size: 16)
-            Text(match.date, format: .dateTime.hour().minute())
+            Text(Self.timeFormatter.string(from: match.date))
                 .font(.system(size: 9, weight: .semibold))
                 .foregroundStyle(.white)
                 .lineLimit(1)
