@@ -1,8 +1,9 @@
 import WidgetKit
 import SwiftUI
 
-/// Vue racine : choisit la mise en page selon la famille de widget.
-/// V1 : small + medium. (Toute couleur passe par `DesignTokens` / `GameStyle`.)
+/// Vue racine : choisit la mise en page selon la famille de widget et le mode
+/// d'affichage choisi par l'utilisateur (liste / calendrier).
+/// (Toute couleur passe par `DesignTokens` / `GameStyle`.)
 struct MatchWidgetView: View {
     @Environment(\.widgetFamily) private var family
     let entry: MatchEntry
@@ -11,9 +12,19 @@ struct MatchWidgetView: View {
         Group {
             switch family {
             case .systemSmall:
+                // Le small reste "prochain match" quel que soit le mode (le calendrier
+                // n'a pas de place ici).
                 SmallMatchView(match: entry.matches.first, errorMessage: entry.errorMessage)
             default:
-                MediumMatchView(matches: entry.matches, errorMessage: entry.errorMessage)
+                if let dayCount = entry.span.dayCount {
+                    CalendarView(
+                        dayCount: dayCount,
+                        matches: entry.matches,
+                        errorMessage: entry.errorMessage
+                    )
+                } else {
+                    MediumMatchView(matches: entry.matches, errorMessage: entry.errorMessage)
+                }
             }
         }
         .containerBackground(DesignTokens.background, for: .widget)
@@ -50,7 +61,7 @@ private struct SmallMatchView: View {
     }
 }
 
-// MARK: - Medium : 2-3 prochains matchs
+// MARK: - Medium (liste) : 2-3 prochains matchs
 
 private struct MediumMatchView: View {
     let matches: [Match]
@@ -74,6 +85,110 @@ private struct MediumMatchView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+// MARK: - Medium (calendrier) : colonnes par jour
+
+private struct CalendarView: View {
+    let dayCount: Int
+    let matches: [Match]
+    let errorMessage: String?
+
+    private var days: [Date] {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: Date())
+        return (0..<dayCount).compactMap { cal.date(byAdding: .day, value: $0, to: start) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            WidgetHeader()
+
+            if matches.isEmpty {
+                Spacer(minLength: 0)
+                EmptyStateLabel(message: errorMessage ?? "Aucun match à venir")
+                Spacer(minLength: 0)
+            } else {
+                HStack(alignment: .top, spacing: 4) {
+                    ForEach(days, id: \.self) { day in
+                        DayColumn(day: day, matches: matches(on: day))
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func matches(on day: Date) -> [Match] {
+        let cal = Calendar.current
+        return matches
+            .filter { cal.isDate($0.date, inSameDayAs: day) }
+            .sorted { $0.date < $1.date }
+    }
+}
+
+/// Une colonne = un jour : en-tête "LU/MA/…" + créneaux du jour empilés.
+private struct DayColumn: View {
+    let day: Date
+    let matches: [Match]
+
+    private var isToday: Bool { Calendar.current.isDateInToday(day) }
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(Self.shortWeekday(day))
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(isToday ? DesignTokens.todayHighlight : .secondary)
+
+            ForEach(matches.prefix(2)) { match in
+                CalendarSlot(match: match)
+            }
+            if matches.count > 2 {
+                Text("+\(matches.count - 2)")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .top)
+        .padding(.vertical, 4)
+        .padding(.horizontal, 2)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(isToday ? DesignTokens.surface.opacity(0.55) : Color.clear)
+        )
+    }
+
+    /// Abréviation FR 2 lettres du jour (LU MA ME JE VE SA DI).
+    static func shortWeekday(_ date: Date) -> String {
+        let symbols = ["DI", "LU", "MA", "ME", "JE", "VE", "SA"] // weekday 1=dimanche
+        let weekday = Calendar.current.component(.weekday, from: date)
+        return symbols[(weekday - 1) % 7]
+    }
+}
+
+/// Créneau calendrier : même esprit que `GameTag` mais en **colonne** —
+/// logo du jeu au-dessus, heure en dessous (texte blanc).
+private struct CalendarSlot: View {
+    let match: Match
+
+    var body: some View {
+        VStack(spacing: 2) {
+            GameLogo(game: match.game, size: 16)
+            Text(match.date, format: .dateTime.hour().minute())
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
+        .padding(.horizontal, 3)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(GameStyle.color(for: match.game).opacity(0.18))
+        )
     }
 }
 
@@ -127,13 +242,33 @@ private struct MatchRow: View {
     }
 }
 
-/// Puce colorée par jeu (couleur issue de `DesignTokens.GameColor` via `GameStyle`).
+/// Logo coloré du jeu (SVG vectoriel embarqué). Fallback sur une pastille
+/// colorée si le jeu n'a pas d'asset (`logoAssetName` nil) — pas de trou vide.
+private struct GameLogo: View {
+    let game: String
+    var size: CGFloat = 14
+
+    var body: some View {
+        if let asset = GameStyle.logoAssetName(for: game) {
+            Image(asset)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size, height: size)
+        } else {
+            Circle()
+                .fill(GameStyle.color(for: game))
+                .frame(width: size * 0.6, height: size * 0.6)
+        }
+    }
+}
+
+/// Puce horizontale par jeu (logo + nom), fond teinté par la couleur du jeu.
 private struct GameTag: View {
     let game: String
 
     var body: some View {
         HStack(spacing: 5) {
-            gameLogo
+            GameLogo(game: game, size: 14)
             Text(game)
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(DesignTokens.todayHighlight)
@@ -144,22 +279,6 @@ private struct GameTag: View {
         .background(
             Capsule().fill(GameStyle.color(for: game).opacity(0.18))
         )
-    }
-
-    /// Logo coloré du jeu (SVG vectoriel embarqué). Fallback sur la pastille
-    /// colorée si le jeu n'a pas d'asset (`logoAssetName` nil).
-    @ViewBuilder
-    private var gameLogo: some View {
-        if let asset = GameStyle.logoAssetName(for: game) {
-            Image(asset)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 14, height: 14)
-        } else {
-            Circle()
-                .fill(GameStyle.color(for: game))
-                .frame(width: 8, height: 8)
-        }
     }
 }
 
@@ -176,14 +295,26 @@ private struct EmptyStateLabel: View {
 
 // MARK: - Previews
 
-#Preview("Medium", as: .systemMedium) {
+#Preview("Liste", as: .systemMedium) {
     GentleMatesWidget()
 } timeline: {
-    MatchEntry.placeholder
+    MatchEntry(date: .now, matches: Match.sampleWeek, span: .liste, errorMessage: nil)
+}
+
+#Preview("Calendrier 3j", as: .systemMedium) {
+    GentleMatesWidget()
+} timeline: {
+    MatchEntry(date: .now, matches: Match.sampleWeek, span: .troisJours, errorMessage: nil)
+}
+
+#Preview("Calendrier 7j", as: .systemMedium) {
+    GentleMatesWidget()
+} timeline: {
+    MatchEntry(date: .now, matches: Match.sampleWeek, span: .septJours, errorMessage: nil)
 }
 
 #Preview("Small", as: .systemSmall) {
     GentleMatesWidget()
 } timeline: {
-    MatchEntry.placeholder
+    MatchEntry(date: .now, matches: Match.sampleWeek, span: .liste, errorMessage: nil)
 }

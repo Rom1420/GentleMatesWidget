@@ -10,15 +10,22 @@ struct GentleMatesWidgetBundle: WidgetBundle {
 }
 
 /// Définition du widget "Prochains matchs".
+///
+/// `AppIntentConfiguration` : l'appui long → "Modifier le widget" affiche
+/// nativement le sélecteur de mode d'affichage (`MatchWidgetConfigIntent`).
 struct GentleMatesWidget: Widget {
     let kind = "GentleMatesUpcomingMatches"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: MatchTimelineProvider()) { entry in
+        AppIntentConfiguration(
+            kind: kind,
+            intent: MatchWidgetConfigIntent.self,
+            provider: MatchTimelineProvider()
+        ) { entry in
             MatchWidgetView(entry: entry)
         }
         .configurationDisplayName("Gentle Mates — Prochains matchs")
-        .description("Les prochains matchs de Gentle Mates sur votre écran d'accueil.")
+        .description("Les prochains matchs de Gentle Mates. Appui long → Modifier pour passer en vue calendrier.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

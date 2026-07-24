@@ -64,8 +64,9 @@ la timeline et les vues ne connaissent que ce protocole — jamais une implémen
 | [`Providers/APIConfiguration.swift`](GentleMatesWidgetExtension/Providers/APIConfiguration.swift) | Config (baseURL / apiKey) chargée d'un fichier non commité |
 | [`Providers/ProviderFactory.swift`](GentleMatesWidgetExtension/Providers/ProviderFactory.swift) | **Le seul endroit** où l'on choisit le provider actif |
 | [`Models/Match.swift`](GentleMatesWidgetExtension/Models/Match.swift) | Le contrat de données `Match` (stable) |
-| [`MatchTimelineProvider.swift`](GentleMatesWidgetExtension/MatchTimelineProvider.swift) | `TimelineProvider` WidgetKit |
-| [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift) | Vues SwiftUI (small + medium) |
+| [`MatchTimelineProvider.swift`](GentleMatesWidgetExtension/MatchTimelineProvider.swift) | `AppIntentTimelineProvider` WidgetKit |
+| [`MatchWidgetConfigIntent.swift`](GentleMatesWidgetExtension/MatchWidgetConfigIntent.swift) | Config "Modifier le widget" (liste / calendrier 3-7 j) |
+| [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift) | Vues SwiftUI (liste + calendrier, small + medium) |
 | [`DesignTokens.swift`](GentleMatesWidgetExtension/DesignTokens.swift) | Couleurs / typo centralisées |
 
 **Pas de backend / BFF.** Le calendrier des matchs est une donnée publique (déjà affichée sans
@@ -149,7 +150,9 @@ Volontairement limité (voir le brief) :
 
 - ✅ Tailles **small** + **medium**.
 - ✅ Affiche les **2–3 prochains matchs** (équipe, adversaire, jeu, date/heure, compétition).
-- ❌ Pas de configuration utilisateur (filtre par jeu…).
+- ✅ **Modes d'affichage configurables** (appui long → *Modifier le widget*, via App Intents) :
+  liste, calendrier 3 jours, calendrier 7 jours.
+- ❌ Pas d'autre configuration utilisateur (filtre par jeu…).
 - ❌ Pas de Live Activities, pas de deep link vers l'app.
 - ❌ Pas de backend / serveur.
 
@@ -173,8 +176,9 @@ GentleMatesWidgetExtension/
 │   │   └── Match.swift                 # contrat de données
 │   ├── DesignTokens.swift
 │   ├── GameStyle.swift                 # nom de jeu -> token couleur
-│   ├── MatchTimelineProvider.swift     # TimelineProvider WidgetKit
-│   ├── MatchWidgetView.swift           # vues SwiftUI (small + medium)
+│   ├── MatchTimelineProvider.swift     # AppIntentTimelineProvider WidgetKit
+│   ├── MatchWidgetConfigIntent.swift   # config "Modifier le widget" (liste / calendrier)
+│   ├── MatchWidgetView.swift           # vues SwiftUI (liste + calendrier, small + medium)
 │   ├── GentleMatesWidgetBundle.swift   # @main WidgetBundle
 │   ├── Info.plist
 │   └── APIConfig.example.plist         # modèle de config (copier en APIConfig.plist)
