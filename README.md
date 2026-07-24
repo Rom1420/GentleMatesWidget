@@ -55,6 +55,12 @@ Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accue
 
 <p align="center"><em>medium = la semaine (7 jours) · small = 3 prochains jours · le match en cours a une bordure aux couleurs du jeu.</em></p>
 
+### 🎬 En vidéo
+
+<video src="https://github.com/Rom1420/GentleMatesWidget/raw/main/docs/demo.mp4" controls muted width="320"></video>
+
+> Si le lecteur ne s'affiche pas, [ouvre la démo depuis le repo](docs/demo.mp4).
+
 > Rendu capturé sur simulateur via [Appetize.io](https://appetize.io) (build produit par la CI GitHub Actions).
 
 ---
