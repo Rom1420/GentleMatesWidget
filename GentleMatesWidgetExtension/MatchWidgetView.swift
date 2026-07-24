@@ -146,8 +146,8 @@ private struct WidgetHeader: View {
                 .frame(maxWidth: .infinity, alignment: .center)
 
             HStack {
-                Spacer()
                 LiveBadge(isLive: isLive)
+                Spacer()
             }
         }
     }
