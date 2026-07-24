@@ -1,7 +1,8 @@
 name: Build
 
-# Filet de sécurité : le project.pbxproj est écrit à la main, ce job confirme
-# que le projet compile réellement sur un vrai toolchain Xcode / simulateur iOS.
+# Filet de securite : le project.pbxproj est ecrit a la main, ce job confirme
+# que le projet compile reellement sur un vrai toolchain Xcode / simulateur iOS.
+# Il uploade aussi le .app (build simulateur) en artefact, utilisable sur Appetize.io.
 on:
   push:
   pull_request:
@@ -25,6 +26,27 @@ jobs:
           xcodebuild
           -project GentleMatesWidget.xcodeproj
           -scheme GentleMatesWidget
+          -configuration Debug
           -destination 'platform=iOS Simulator,name=iPhone 15'
+          -derivedDataPath build
           CODE_SIGNING_ALLOWED=NO
           build
+
+      - name: Zip .app (build simulateur, pour Appetize.io)
+        run: |
+          APP_PATH="build/Build/Products/Debug-iphonesimulator/GentleMatesWidget.app"
+          if [ ! -d "$APP_PATH" ]; then
+            echo "::error::.app introuvable a $APP_PATH"
+            ls -R build/Build/Products || true
+            exit 1
+          fi
+          # -y preserve les liens symboliques du bundle (frameworks embarques)
+          cd "$(dirname "$APP_PATH")"
+          zip -r -y "$GITHUB_WORKSPACE/GentleMatesWidget.app.zip" "GentleMatesWidget.app"
+
+      - name: Upload artefact .app
+        uses: actions/upload-artifact@v4
+        with:
+          name: GentleMatesWidget-simulator-app
+          path: GentleMatesWidget.app.zip
+          if-no-files-found: error
