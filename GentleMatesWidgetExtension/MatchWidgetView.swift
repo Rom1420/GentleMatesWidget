@@ -167,6 +167,14 @@ private struct CalendarSlot: View {
             RoundedRectangle(cornerRadius: 6)
                 .fill(GameStyle.color(for: match.game).opacity(0.18))
         )
+        // Match en cours : bordure de la couleur du jeu en pleine opacité.
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .strokeBorder(
+                    GameStyle.color(for: match.game),
+                    lineWidth: match.status == .live ? 1.5 : 0
+                )
+        )
     }
 }
 
