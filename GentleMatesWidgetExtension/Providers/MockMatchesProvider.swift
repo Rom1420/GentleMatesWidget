@@ -28,7 +28,7 @@ extension Match {
         let matches = [
             Match(id: "mock-1", game: "Valorant", team: "Gentle Mates",
                   opponent: "Team Vitality", date: at(0, 20),
-                  competition: "VCT 26: EMEA Stage 2", status: .upcoming, score: nil),
+                  competition: "VCT 26: EMEA Stage 2", status: .live, score: "1 - 0"),
 
             Match(id: "mock-2", game: "Rocket League", team: "Gentle Mates",
                   opponent: "Karmine Corp", date: at(1, 18, 30),

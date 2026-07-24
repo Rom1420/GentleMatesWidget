@@ -64,9 +64,9 @@ la timeline et les vues ne connaissent que ce protocole — jamais une implémen
 | [`Providers/APIConfiguration.swift`](GentleMatesWidgetExtension/Providers/APIConfiguration.swift) | Config (baseURL / apiKey) chargée d'un fichier non commité |
 | [`Providers/ProviderFactory.swift`](GentleMatesWidgetExtension/Providers/ProviderFactory.swift) | **Le seul endroit** où l'on choisit le provider actif |
 | [`Models/Match.swift`](GentleMatesWidgetExtension/Models/Match.swift) | Le contrat de données `Match` (stable) |
-| [`MatchTimelineProvider.swift`](GentleMatesWidgetExtension/MatchTimelineProvider.swift) | `TimelineProvider` + `CalendarSpan` (mode d'affichage) |
-| [`GentleMatesWidgetBundle.swift`](GentleMatesWidgetExtension/GentleMatesWidgetBundle.swift) | Les 3 widgets (liste / calendrier 3 j / 7 j) |
-| [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift) | Vues SwiftUI (liste + calendrier, small → large) |
+| [`MatchTimelineProvider.swift`](GentleMatesWidgetExtension/MatchTimelineProvider.swift) | `TimelineProvider` WidgetKit |
+| [`GentleMatesWidgetBundle.swift`](GentleMatesWidgetExtension/GentleMatesWidgetBundle.swift) | Le widget calendrier (small = 3 j / medium = 7 j) |
+| [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift) | Vue calendrier SwiftUI (colonnes par jour, header M8 / LIVE) |
 | [`DesignTokens.swift`](GentleMatesWidgetExtension/DesignTokens.swift) | Couleurs / typo centralisées |
 
 **Pas de backend / BFF.** Le calendrier des matchs est une donnée publique (déjà affichée sans
@@ -149,12 +149,12 @@ consomment **exclusivement** ces tokens — aucune couleur ni police en dur aill
 Volontairement limité (voir le brief) :
 
 - ✅ Tailles **small** + **medium**.
-- ✅ Affiche les **2–3 prochains matchs** (équipe, adversaire, jeu, date/heure, compétition).
-- ✅ **3 widgets au choix dans la galerie** : Prochains matchs (liste), Calendrier 3 jours,
-  Calendrier 7 jours. *(Volontairement en `StaticConfiguration` et non en widget unique
-  configurable via App Intents : ce dernier reste bloqué sur son placeholder en
-  simulateur / Appetize — voir la note dans `GentleMatesWidgetBundle.swift`.)*
-- ❌ Pas d'autre configuration utilisateur (filtre par jeu…).
+- ✅ **Vue calendrier** en colonnes par jour (logo du jeu + heure), jour courant surligné.
+- ✅ **2 tailles** : *small* = 3 prochains jours, *medium* = 7 jours (la semaine).
+- ✅ Header : blason **M8** centré + badge **LIVE** quand un match est en cours.
+- ℹ️ `StaticConfiguration` (pas d'App Intents : un widget configurable reste bloqué sur son
+  placeholder en simulateur / Appetize — voir la note dans `GentleMatesWidgetBundle.swift`).
+- ❌ Pas de configuration utilisateur (filtre par jeu…).
 - ❌ Pas de Live Activities, pas de deep link vers l'app.
 - ❌ Pas de backend / serveur.
 
@@ -178,9 +178,9 @@ GentleMatesWidgetExtension/
 │   │   └── Match.swift                 # contrat de données
 │   ├── DesignTokens.swift
 │   ├── GameStyle.swift                 # nom de jeu -> token couleur
-│   ├── MatchTimelineProvider.swift     # TimelineProvider + enum CalendarSpan
-│   ├── MatchWidgetView.swift           # vues SwiftUI (liste + calendrier, small → large)
-│   ├── GentleMatesWidgetBundle.swift   # @main WidgetBundle (3 widgets)
+│   ├── MatchTimelineProvider.swift     # TimelineProvider WidgetKit
+│   ├── MatchWidgetView.swift           # vue calendrier (small 3 j / medium 7 j)
+│   ├── GentleMatesWidgetBundle.swift   # @main WidgetBundle (widget calendrier)
 │   ├── Info.plist
 │   └── APIConfig.example.plist         # modèle de config (copier en APIConfig.plist)
 └── README.md

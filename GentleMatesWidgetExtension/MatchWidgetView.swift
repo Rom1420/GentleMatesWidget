@@ -1,99 +1,35 @@
 import WidgetKit
 import SwiftUI
 
-/// Vue racine : choisit la mise en page selon la famille de widget et le mode
-/// d'affichage choisi par l'utilisateur (liste / calendrier).
+/// Vue racine : calendrier des matchs, en colonnes par jour.
+/// La taille du widget fixe le nombre de jours affichés :
+///  - **small**  → 3 prochains jours,
+///  - **medium** → 7 jours (la semaine).
 /// (Toute couleur passe par `DesignTokens` / `GameStyle`.)
 struct MatchWidgetView: View {
     @Environment(\.widgetFamily) private var family
     let entry: MatchEntry
 
+    private var dayCount: Int { family == .systemSmall ? 3 : 7 }
+
     var body: some View {
-        Group {
-            switch family {
-            case .systemSmall:
-                // Le small reste "prochain match" quel que soit le mode (le calendrier
-                // n'a pas de place ici).
-                SmallMatchView(match: entry.matches.first, errorMessage: entry.errorMessage)
-            default:
-                if let dayCount = entry.span.dayCount {
-                    CalendarView(
-                        dayCount: dayCount,
-                        matches: entry.matches,
-                        errorMessage: entry.errorMessage
-                    )
-                } else {
-                    MediumMatchView(matches: entry.matches, errorMessage: entry.errorMessage)
-                }
-            }
-        }
+        CalendarView(
+            dayCount: dayCount,
+            matches: entry.matches,
+            errorMessage: entry.errorMessage,
+            compact: family == .systemSmall
+        )
         .containerBackground(DesignTokens.background, for: .widget)
     }
 }
 
-// MARK: - Small : le prochain match uniquement
-
-private struct SmallMatchView: View {
-    let match: Match?
-    let errorMessage: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            WidgetHeader()
-
-            if let match {
-                Spacer(minLength: 0)
-                GameTag(game: match.game)
-                Text(match.opponent)
-                    .font(.headline)
-                    .foregroundStyle(DesignTokens.todayHighlight)
-                    .lineLimit(1)
-                Text(match.date, format: .dateTime.weekday(.abbreviated).hour().minute())
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else {
-                Spacer(minLength: 0)
-                EmptyStateLabel(message: errorMessage ?? "Aucun match à venir")
-            }
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-}
-
-// MARK: - Medium (liste) : 2-3 prochains matchs
-
-private struct MediumMatchView: View {
-    let matches: [Match]
-    let errorMessage: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            WidgetHeader()
-
-            if matches.isEmpty {
-                Spacer(minLength: 0)
-                EmptyStateLabel(message: errorMessage ?? "Aucun match à venir")
-                Spacer(minLength: 0)
-            } else {
-                ForEach(matches.prefix(3)) { match in
-                    MatchRow(match: match)
-                    if match.id != matches.prefix(3).last?.id {
-                        Divider().overlay(DesignTokens.surface)
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    }
-}
-
-// MARK: - Medium (calendrier) : colonnes par jour
+// MARK: - Calendrier : colonnes par jour
 
 private struct CalendarView: View {
     let dayCount: Int
     let matches: [Match]
     let errorMessage: String?
+    let compact: Bool
 
     private var days: [Date] {
         let cal = Calendar.current
@@ -101,18 +37,20 @@ private struct CalendarView: View {
         return (0..<dayCount).compactMap { cal.date(byAdding: .day, value: $0, to: start) }
     }
 
+    private var hasLive: Bool { matches.contains { $0.status == .live } }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            WidgetHeader()
+        VStack(alignment: .leading, spacing: compact ? 6 : 8) {
+            WidgetHeader(hasLive: hasLive, compact: compact)
 
             if matches.isEmpty {
                 Spacer(minLength: 0)
                 EmptyStateLabel(message: errorMessage ?? "Aucun match à venir")
                 Spacer(minLength: 0)
             } else {
-                HStack(alignment: .top, spacing: 4) {
+                HStack(alignment: .top, spacing: compact ? 3 : 4) {
                     ForEach(days, id: \.self) { day in
-                        DayColumn(day: day, matches: matches(on: day))
+                        DayColumn(day: day, matches: matches(on: day), compact: compact)
                     }
                 }
             }
@@ -132,6 +70,7 @@ private struct CalendarView: View {
 private struct DayColumn: View {
     let day: Date
     let matches: [Match]
+    let compact: Bool
 
     private var isToday: Bool { Calendar.current.isDateInToday(day) }
 
@@ -168,8 +107,8 @@ private struct DayColumn: View {
     }
 }
 
-/// Créneau calendrier : même esprit que `GameTag` mais en **colonne** —
-/// logo du jeu au-dessus, heure en dessous (texte blanc).
+/// Créneau : logo du jeu au-dessus, heure en dessous (texte blanc), fond teinté
+/// par la couleur du jeu.
 private struct CalendarSlot: View {
     let match: Match
 
@@ -192,55 +131,45 @@ private struct CalendarSlot: View {
     }
 }
 
-// MARK: - Composants partagés
+// MARK: - Header : blason M8 centré + badge LIVE à droite
 
 private struct WidgetHeader: View {
-    var body: some View {
-        HStack(spacing: 6) {
-            Text("M8")
-                .font(.system(size: 15, weight: .heavy, design: .rounded))
-                .foregroundStyle(DesignTokens.todayHighlight)
-            Text("Prochains matchs")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-            Spacer(minLength: 0)
-        }
-    }
-}
-
-private struct MatchRow: View {
-    let match: Match
+    let hasLive: Bool
+    let compact: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
-            GameTag(game: match.game)
-                .frame(width: 96, alignment: .leading)
+        ZStack {
+            Image("m8-logo")
+                .resizable()
+                .scaledToFit()
+                .frame(height: compact ? 18 : 22)
+                .frame(maxWidth: .infinity, alignment: .center)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(match.opponent)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(DesignTokens.todayHighlight)
-                    .lineLimit(1)
-                Text(match.competition)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-
-            Spacer(minLength: 4)
-
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(match.date, format: .dateTime.weekday(.abbreviated))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                Text(match.date, format: .dateTime.hour().minute())
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(DesignTokens.todayHighlight)
+            if hasLive {
+                HStack {
+                    Spacer()
+                    LiveBadge()
+                }
             }
         }
     }
 }
+
+/// Pastille "● LIVE" affichée quand un match est en cours.
+private struct LiveBadge: View {
+    var body: some View {
+        HStack(spacing: 3) {
+            Circle()
+                .fill(.red)
+                .frame(width: 6, height: 6)
+            Text("LIVE")
+                .font(.system(size: 10, weight: .heavy))
+                .foregroundStyle(.white)
+        }
+    }
+}
+
+// MARK: - Composants partagés
 
 /// Logo coloré du jeu (SVG vectoriel embarqué). Fallback sur une pastille
 /// colorée si le jeu n'a pas d'asset (`logoAssetName` nil) — pas de trou vide.
@@ -262,26 +191,6 @@ private struct GameLogo: View {
     }
 }
 
-/// Puce horizontale par jeu (logo + nom), fond teinté par la couleur du jeu.
-private struct GameTag: View {
-    let game: String
-
-    var body: some View {
-        HStack(spacing: 5) {
-            GameLogo(game: game, size: 14)
-            Text(game)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(DesignTokens.todayHighlight)
-                .lineLimit(1)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(
-            Capsule().fill(GameStyle.color(for: game).opacity(0.18))
-        )
-    }
-}
-
 private struct EmptyStateLabel: View {
     let message: String
 
@@ -289,32 +198,20 @@ private struct EmptyStateLabel: View {
         Text(message)
             .font(.footnote)
             .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 
 // MARK: - Previews
 
-#Preview("Liste", as: .systemMedium) {
-    GentleMatesListWidget()
+#Preview("Small — 3 jours", as: .systemSmall) {
+    GentleMatesWidget()
 } timeline: {
-    MatchEntry(date: .now, matches: Match.sampleWeek, span: .liste, errorMessage: nil)
+    MatchEntry(date: .now, matches: Match.sampleWeek, errorMessage: nil)
 }
 
-#Preview("Calendrier 3j", as: .systemMedium) {
-    GentleMatesCalendar3Widget()
+#Preview("Medium — 7 jours", as: .systemMedium) {
+    GentleMatesWidget()
 } timeline: {
-    MatchEntry(date: .now, matches: Match.sampleWeek, span: .troisJours, errorMessage: nil)
-}
-
-#Preview("Calendrier 7j", as: .systemLarge) {
-    GentleMatesCalendar7Widget()
-} timeline: {
-    MatchEntry(date: .now, matches: Match.sampleWeek, span: .septJours, errorMessage: nil)
-}
-
-#Preview("Small", as: .systemSmall) {
-    GentleMatesListWidget()
-} timeline: {
-    MatchEntry(date: .now, matches: Match.sampleWeek, span: .liste, errorMessage: nil)
+    MatchEntry(date: .now, matches: Match.sampleWeek, errorMessage: nil)
 }
