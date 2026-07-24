@@ -151,7 +151,7 @@ Volontairement limité (voir le brief) :
 - ✅ Tailles **small** + **medium**.
 - ✅ **Vue calendrier** en colonnes par jour (logo du jeu + heure), jour courant surligné.
 - ✅ **2 tailles** : *small* = 3 prochains jours, *medium* = 7 jours (la semaine).
-- ✅ Header : blason **M8** centré + badge **LIVE** quand un match est en cours.
+- ✅ Header : blason **M8** centré + badge **LIVE** toujours présent (pastille + texte **rouges** quand un match est en cours, clair sinon).
 - ℹ️ `StaticConfiguration` (pas d'App Intents : un widget configurable reste bloqué sur son
   placeholder en simulateur / Appetize — voir la note dans `GentleMatesWidgetBundle.swift`).
 - ❌ Pas de configuration utilisateur (filtre par jeu…).

@@ -41,7 +41,7 @@ private struct CalendarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: compact ? 6 : 8) {
-            WidgetHeader(hasLive: hasLive, compact: compact)
+            WidgetHeader(isLive: hasLive, compact: compact)
 
             if matches.isEmpty {
                 Spacer(minLength: 0)
@@ -134,7 +134,7 @@ private struct CalendarSlot: View {
 // MARK: - Header : blason M8 centré + badge LIVE à droite
 
 private struct WidgetHeader: View {
-    let hasLive: Bool
+    let isLive: Bool
     let compact: Bool
 
     var body: some View {
@@ -145,26 +145,32 @@ private struct WidgetHeader: View {
                 .frame(height: compact ? 18 : 22)
                 .frame(maxWidth: .infinity, alignment: .center)
 
-            if hasLive {
-                HStack {
-                    Spacer()
-                    LiveBadge()
-                }
+            HStack {
+                Spacer()
+                LiveBadge(isLive: isLive)
             }
         }
     }
 }
 
-/// Pastille "● LIVE" affichée quand un match est en cours.
+/// Pastille "● LIVE" toujours présente dans le header : pastille + texte en **rouge**
+/// quand un match est en cours, sinon en clair (gris/blanc).
 private struct LiveBadge: View {
+    let isLive: Bool
+
+    private var color: Color {
+        isLive ? .red : DesignTokens.todayHighlight.opacity(0.7)
+    }
+
     var body: some View {
         HStack(spacing: 3) {
             Circle()
-                .fill(.red)
+                .fill(color)
                 .frame(width: 6, height: 6)
             Text("LIVE")
                 .font(.system(size: 10, weight: .heavy))
-                .foregroundStyle(.white)
+                .italic()
+                .foregroundStyle(color)
         }
     }
 }
