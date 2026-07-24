@@ -1,15 +1,21 @@
-# Gentle Mates — Widget iOS « Prochains matchs »
+<h1 align="center">Gentle Mates — Widget iOS « Prochains matchs »</h1>
 
-[![Build](https://github.com/Rom1420/GentleMatesWidget/actions/workflows/build.yml/badge.svg)](https://github.com/Rom1420/GentleMatesWidget/actions/workflows/build.yml)
-![Platform](https://img.shields.io/badge/iOS-17%2B-black?logo=apple)
-![SwiftUI](https://img.shields.io/badge/SwiftUI-WidgetKit-blue)
+<p align="center">
+  <img src="docs/demo.gif" alt="Démo du widget Gentle Mates" width="300">
+</p>
 
-Un widget iOS (non officiel) qui affiche le **calendrier des prochains matchs de [Gentle Mates](https://gentlemates.com)** directement sur l'écran d'accueil.
+<p align="center">
+  <b>Le calendrier des prochains matchs de Gentle Mates, directement sur ton écran d'accueil.</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Rom1420/GentleMatesWidget/actions/workflows/build.yml"><img src="https://github.com/Rom1420/GentleMatesWidget/actions/workflows/build.yml/badge.svg" alt="Build"></a>
+  <img src="https://img.shields.io/badge/iOS-17%2B-black?logo=apple" alt="iOS 17+">
+  <img src="https://img.shields.io/badge/SwiftUI-WidgetKit-blue" alt="SwiftUI">
+</p>
 
 > **Preuve de concept, mais prête pour la vraie vie.** Les données sont mockées aujourd'hui, mais toute
 > l'architecture est faite pour brancher la vraie API M8 en **remplaçant une seule classe** — rien d'autre.
-
----
 
 ## Le pourquoi
 
@@ -43,8 +49,6 @@ Ce n'est pas juste mon avis : la demande revient **noir sur blanc dans les avis 
 
 Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accueil. C'est exactement ce que fait ce widget.
 
----
-
 ## Aperçu
 
 <p align="center">
@@ -55,13 +59,9 @@ Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accue
 
 <p align="center"><em>medium = la semaine (7 jours) · small = 3 prochains jours · le match en cours a une bordure aux couleurs du jeu.</em></p>
 
-### 🎬 En vidéo
-
-▶️ **[Voir la démo (≈30 s)](docs/demo.mp4)** — le lecteur s'ouvre au clic.
+<p align="center">🎬 Démo animée en haut de page · <a href="docs/demo.mp4">vidéo complète</a></p>
 
 > Rendu capturé sur simulateur via [Appetize.io](https://appetize.io) (build produit par la CI GitHub Actions).
-
----
 
 ## Ce que fait le widget
 
@@ -71,8 +71,6 @@ Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accue
 - 📐 **2 tailles** : *small* (3 prochains jours) et *medium* (la semaine).
 - 🎨 Couleurs et pictogrammes **par jeu** (Valorant, Rocket League, CS2, Fortnite, TFT…), centralisés
   dans un fichier de design tokens.
-
----
 
 ## Comment ça s'intègre chez M8 (plus tard)
 
@@ -101,8 +99,6 @@ Le widget, la timeline et les vues ne connaissent **que le protocole** `MatchesP
 Et **pas besoin de backend** : le calendrier des matchs est une donnée publique (déjà affichée sans
 compte dans l'app), donc tout reste côté client.
 
----
-
 ## Brancher une vraie API — en 4 étapes
 
 1. **Implémenter** `GentleMatesAPIProvider.fetchUpcomingMatches()`
@@ -121,8 +117,6 @@ static func makeProvider() -> MatchesProvider {
 }
 ```
 
----
-
 ## Lancer le POC
 
 1. Ouvrir `GentleMatesWidget.xcodeproj` dans **Xcode 15+**.
@@ -133,8 +127,6 @@ static func makeProvider() -> MatchesProvider {
 Le widget tourne sur `MockMatchesProvider` : aucune configuration, aucun réseau, aucun backend.
 Les vues se prévisualisent aussi via les `#Preview` de
 [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift).
-
----
 
 ## Stack & structure
 
@@ -161,8 +153,6 @@ GentleMatesWidgetExtension/
 Un job **GitHub Actions** (`macos`) compile le projet à chaque push : le `project.pbxproj` étant
 écrit à la main, c'est le filet de sécurité qui garantit que le repo reste buildable.
 
----
-
 ## Périmètre & idées pour la suite
 
 Volontairement resserré pour un POC :
@@ -171,8 +161,6 @@ Volontairement resserré pour un POC :
 - 🔜 Pistes (aussi réclamées dans les avis) : **Live Activities** pour un match en cours,
   **export ICS** du calendrier, deep link vers l'app, filtre par jeu.
 - ❌ Pas de backend, pas de config utilisateur pour l'instant.
-
----
 
 ## Disclaimer
 
