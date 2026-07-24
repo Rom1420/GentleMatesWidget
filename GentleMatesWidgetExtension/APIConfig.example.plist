@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Modèle de configuration API.
+
+  Pour brancher la vraie API :
+    1. Copier ce fichier en "APIConfig.plist" (même dossier).
+    2. Renseigner baseURL (+ apiKey si nécessaire).
+    3. L'ajouter au target de l'extension (Target Membership > GentleMatesWidgetExtension)
+       pour qu'il soit embarqué dans le bundle.
+
+  "APIConfig.plist" est gitignoré : il ne doit jamais être commité.
+-->
+<plist version="1.0">
+<dict>
+	<key>baseURL</key>
+	<string>https://api.example.com/v1</string>
+	<key>apiKey</key>
+	<string></string>
+</dict>
+</plist>
