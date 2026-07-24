@@ -39,12 +39,6 @@ Ce n'est pas juste mon avis : la demande revient **noir sur blanc dans les avis 
 > « Il manque encore une chose : **un widget du calendrier des matchs**. J'ai mon calendrier perso en
 > widget et j'aimerais bien avoir celui des matchs aussi. »
 
-> ⭐️⭐️⭐️⭐️⭐️ **DarkFord** — *« Ajout possible »*
-> « Pouvoir **exporter le calendrier** pour le mettre dans nos calendriers. »
-
-> ⭐️⭐️⭐️⭐️ **HugoPeter67** — *« Trop bien ! »*
-> « J'aimerais des **notifications sur les matchs en cours**. »
-
 *(Avis publics sur l'App Store fr de l'app « Gentle Mates », consultés en juillet 2026.)*
 
 Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accueil. C'est exactement ce que fait ce widget.
@@ -52,23 +46,19 @@ Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accue
 ## Aperçu
 
 <p align="center">
-  <img src="docs/widget-medium.png" alt="Widget medium — la semaine" width="46%">
+  <img src="docs/widget-medium.png" alt="Widget medium — 7 prochains jours" width="46%">
   &nbsp;&nbsp;
   <img src="docs/widget-small.png" alt="Widget small — 3 jours" width="46%">
 </p>
 
-<p align="center"><em>medium = la semaine (7 jours) · small = 3 prochains jours · le match en cours a une bordure aux couleurs du jeu.</em></p>
-
-<p align="center">🎬 Démo animée en haut de page · <a href="docs/demo.mp4">vidéo complète</a></p>
-
-> Rendu capturé sur simulateur via [Appetize.io](https://appetize.io) (build produit par la CI GitHub Actions).
+<p align="center"><em>medium = 7 prochains jours · small = 3 prochains jours · le match en cours a une bordure aux couleurs du jeu.</em></p>
 
 ## Ce que fait le widget
 
 - 🗓️ **Vue calendrier** en colonnes par jour (`LU MA ME…`), le jour courant surligné.
 - 🎮 **Logo du jeu + heure** (format 24h) pour chaque match, jusqu'à **4 matchs par jour**.
 - 🔴 **Match en cours** signalé par une **bordure de la couleur du jeu**.
-- 📐 **2 tailles** : *small* (3 prochains jours) et *medium* (la semaine).
+- 📐 **2 tailles** : *small* (3 prochains jours) et *medium* (7 prochains jours).
 - 🎨 Couleurs et pictogrammes **par jeu** (Valorant, Rocket League, CS2, Fortnite, TFT…), centralisés
   dans un fichier de design tokens.
 
