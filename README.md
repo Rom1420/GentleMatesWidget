@@ -1,188 +1,180 @@
 # Gentle Mates — Widget iOS « Prochains matchs »
 
-POC public d'un widget iOS (WidgetKit / SwiftUI) affichant les prochains matchs de
-[Gentle Mates](https://gentlemates.com) sur l'écran d'accueil.
+[![Build](https://github.com/Rom1420/GentleMatesWidget/actions/workflows/build.yml/badge.svg)](https://github.com/Rom1420/GentleMatesWidget/actions/workflows/build.yml)
+![Platform](https://img.shields.io/badge/iOS-17%2B-black?logo=apple)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-WidgetKit-blue)
 
-> **Statut :** proof of concept. Les données affichées sont **mockées** (`MockMatchesProvider`).
-> L'architecture est prête à être branchée sur la vraie API du jour au lendemain, sans rien
-> réécrire d'autre que l'implémentation du provider de données.
+Un widget iOS (non officiel) qui affiche le **calendrier des prochains matchs de [Gentle Mates](https://gentlemates.com)** directement sur l'écran d'accueil.
 
-<p align="center"><em>Cible : iOS 17+ • Xcode 15+ • Swift 5</em></p>
+> **Preuve de concept, mais prête pour la vraie vie.** Les données sont mockées aujourd'hui, mais toute
+> l'architecture est faite pour brancher la vraie API M8 en **remplaçant une seule classe** — rien d'autre.
 
 ---
 
-## Sommaire
+## Le pourquoi
 
-- [Lancer le POC](#lancer-le-poc)
-- [Architecture](#architecture)
-- [Brancher une vraie API](#brancher-une-vraie-api) ← le point d'entrée à lire en priorité
-- [Design / Design tokens](#design--design-tokens)
-- [Périmètre V1](#périmètre-v1)
+Ça fait un moment que je rêve d'avoir les **prochains matchs M8 sur mon écran d'accueil**, sans ouvrir
+l'app ni fouiller Twitter. Un coup d'œil, je sais quand joue l'équipe. Mes potes fans aussi en parlent
+tout le temps.
+
+L'app officielle Gentle Mates est top pour le reste, mais **il n'y a pas de widget**. Alors j'en ai fait
+un — d'abord pour nous, et pour montrer concrètement à quoi ça pourrait ressembler.
+
+## On n'est pas les seuls à le vouloir
+
+Ce n'est pas juste mon avis : la demande revient **noir sur blanc dans les avis App Store** de l'app 🇫🇷 :
+
+> ⭐️⭐️⭐️⭐️⭐️ **Twy-kse** — *« Géniale mais quelques fonctionnalités à ajouter »*
+> « Je regrette qu'elle ne profite pas plus des fonctionnalités Apple comme les **Widget**, pour par
+> exemple suivre les prochains matchs ou les activités en direct lors d'un match. Avec ces petits ajouts
+> elle serait parfaite 😍 »
+
+> ⭐️⭐️⭐️⭐️⭐️ **Le_Codeur_Faussaire** — *« La màj de l'appli est pas mal ! »*
+> « Il manque encore une chose : **un widget du calendrier des matchs**. J'ai mon calendrier perso en
+> widget et j'aimerais bien avoir celui des matchs aussi. »
+
+> ⭐️⭐️⭐️⭐️⭐️ **DarkFord** — *« Ajout possible »*
+> « Pouvoir **exporter le calendrier** pour le mettre dans nos calendriers. »
+
+> ⭐️⭐️⭐️⭐️ **HugoPeter67** — *« Trop bien ! »*
+> « J'aimerais des **notifications sur les matchs en cours**. »
+
+*(Avis publics sur l'App Store fr de l'app « Gentle Mates », consultés en juillet 2026.)*
+
+Bref : les fans veulent voir les matchs **sans effort**, sur leur écran d'accueil. C'est exactement ce que fait ce widget.
+
+---
+
+## Aperçu
+
+<p align="center">
+  <img src="docs/widget-medium.png" alt="Widget medium — la semaine" width="46%">
+  &nbsp;&nbsp;
+  <img src="docs/widget-small.png" alt="Widget small — 3 jours" width="46%">
+</p>
+
+<p align="center"><em>medium = la semaine (7 jours) · small = 3 prochains jours · le match en cours a une bordure aux couleurs du jeu.</em></p>
+
+> Rendu capturé sur simulateur via [Appetize.io](https://appetize.io) (build produit par la CI GitHub Actions).
+
+---
+
+## Ce que fait le widget
+
+- 🗓️ **Vue calendrier** en colonnes par jour (`LU MA ME…`), le jour courant surligné.
+- 🎮 **Logo du jeu + heure** (format 24h) pour chaque match, jusqu'à **4 matchs par jour**.
+- 🔴 **Match en cours** signalé par une **bordure de la couleur du jeu**.
+- 📐 **2 tailles** : *small* (3 prochains jours) et *medium* (la semaine).
+- 🎨 Couleurs et pictogrammes **par jeu** (Valorant, Rocket League, CS2, Fortnite, TFT…), centralisés
+  dans un fichier de design tokens.
+
+---
+
+## Comment ça s'intègre chez M8 (plus tard)
+
+C'est le cœur du projet : **la source de données est totalement isolée du reste du code.**
+
+```
+┌────────────────────┐    ┌───────────────────────┐    ┌────────────────────┐
+│ MatchWidgetView    │ ─▶ │ MatchTimelineProvider │ ─▶ │ MatchesProvider    │  (protocole)
+│ (SwiftUI)          │    │ (WidgetKit)           │    └─────────┬──────────┘
+└────────────────────┘    └───────────────────────┘              │
+                                                    ┌─────────────┴──────────────┐
+                                                    ▼                            ▼
+                                         MockMatchesProvider          GentleMatesAPIProvider
+                                         (données factices — actif)   (stub → vraie API M8)
+                                                    ▲
+                                                    │  choisi à un seul endroit
+                                             ProviderFactory.makeProvider()
+```
+
+Le widget, la timeline et les vues ne connaissent **que le protocole** `MatchesProvider`. Résultat :
+
+> **Le jour où M8 donne un accès à son API, on implémente une classe (`GentleMatesAPIProvider`, déjà
+> esquissée), on mappe le JSON réel vers `Match`, et on change une ligne dans `ProviderFactory`.
+> Aucune vue, aucune timeline à retoucher.**
+
+Et **pas besoin de backend** : le calendrier des matchs est une donnée publique (déjà affichée sans
+compte dans l'app), donc tout reste côté client.
+
+---
+
+## Brancher une vraie API — en 4 étapes
+
+1. **Implémenter** `GentleMatesAPIProvider.fetchUpcomingMatches()`
+   ([fichier](GentleMatesWidgetExtension/Providers/GentleMatesAPIProvider.swift)) — un exemple complet
+   de requête est déjà en commentaire.
+2. **Mapper** le JSON réel vers le contrat stable [`Match`](GentleMatesWidgetExtension/Models/Match.swift)
+   (fonction `map(_:)` esquissée).
+3. **Renseigner** la config : copier [`APIConfig.example.plist`](GentleMatesWidgetExtension/APIConfig.example.plist)
+   en `APIConfig.plist` (gitignoré), y mettre `baseURL` / `apiKey`, et l'ajouter au target de l'extension.
+4. **Activer** le provider dans [`ProviderFactory.swift`](GentleMatesWidgetExtension/Providers/ProviderFactory.swift) :
+
+```swift
+static func makeProvider() -> MatchesProvider {
+    // MockMatchesProvider()      // ← commenter
+    GentleMatesAPIProvider()      // ← décommenter
+}
+```
 
 ---
 
 ## Lancer le POC
 
 1. Ouvrir `GentleMatesWidget.xcodeproj` dans **Xcode 15+**.
-2. Sélectionner le schéma **GentleMatesWidget** et un simulateur iOS 17+.
-3. `Cmd + R` pour lancer l'app conteneur.
-4. Sur le simulateur : appui long sur l'écran d'accueil → **+** → chercher **Gentle Mates**
-   → ajouter le widget (tailles *small* ou *medium*).
+2. Schéma **GentleMatesWidget** + un simulateur iOS 17+, puis `Cmd + R`.
+3. Sur le simulateur : appui long sur l'écran d'accueil → **+** → chercher **Gentle Mates** → ajouter le
+   widget (*small* ou *medium*).
 
-Le widget affiche les prochains matchs fournis par `MockMatchesProvider`. Aucune configuration,
-aucun réseau, aucun backend : tout tourne en local.
-
-> ℹ️ Le widget se prévisualise aussi directement dans Xcode via les `#Preview` de
-> [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift).
+Le widget tourne sur `MockMatchesProvider` : aucune configuration, aucun réseau, aucun backend.
+Les vues se prévisualisent aussi via les `#Preview` de
+[`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift).
 
 ---
 
-## Architecture
+## Stack & structure
 
-La source de données est **totalement isolée** du reste du code par un protocole. Le widget,
-la timeline et les vues ne connaissent que ce protocole — jamais une implémentation concrète.
-
-```
-┌─────────────────────┐     ┌──────────────────────┐     ┌───────────────────┐
-│ MatchWidgetView     │ ──▶ │ MatchTimelineProvider │ ──▶ │ MatchesProvider   │  (protocole)
-│ (SwiftUI)           │     │ (WidgetKit)          │     └─────────┬─────────┘
-└─────────────────────┘     └──────────────────────┘               │
-                                                     ┌─────────────┴──────────────┐
-                                                     ▼                            ▼
-                                          MockMatchesProvider          GentleMatesAPIProvider
-                                          (données factices)           (stub → vraie API)
-                                                     ▲
-                                                     │  choisi à un seul endroit
-                                              ProviderFactory.makeProvider()
-```
-
-| Fichier | Rôle |
-|---|---|
-| [`Providers/MatchesProvider.swift`](GentleMatesWidgetExtension/Providers/MatchesProvider.swift) | Le protocole : `fetchUpcomingMatches() async throws -> [Match]` |
-| [`Providers/MockMatchesProvider.swift`](GentleMatesWidgetExtension/Providers/MockMatchesProvider.swift) | Données factices (le POC tourne dessus) |
-| [`Providers/GentleMatesAPIProvider.swift`](GentleMatesWidgetExtension/Providers/GentleMatesAPIProvider.swift) | **Stub** de la vraie API — point d'insertion |
-| [`Providers/APIConfiguration.swift`](GentleMatesWidgetExtension/Providers/APIConfiguration.swift) | Config (baseURL / apiKey) chargée d'un fichier non commité |
-| [`Providers/ProviderFactory.swift`](GentleMatesWidgetExtension/Providers/ProviderFactory.swift) | **Le seul endroit** où l'on choisit le provider actif |
-| [`Models/Match.swift`](GentleMatesWidgetExtension/Models/Match.swift) | Le contrat de données `Match` (stable) |
-| [`MatchTimelineProvider.swift`](GentleMatesWidgetExtension/MatchTimelineProvider.swift) | `TimelineProvider` WidgetKit |
-| [`GentleMatesWidgetBundle.swift`](GentleMatesWidgetExtension/GentleMatesWidgetBundle.swift) | Le widget calendrier (small = 3 j / medium = 7 j) |
-| [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift) | Vue calendrier SwiftUI (colonnes par jour, sans bandeau) |
-| [`DesignTokens.swift`](GentleMatesWidgetExtension/DesignTokens.swift) | Couleurs / typo centralisées |
-
-**Pas de backend / BFF.** Le calendrier des matchs est une donnée publique (déjà affichée sans
-compte ni paywall dans l'app), donc tout reste côté client pour ce POC.
-
----
-
-## Brancher une vraie API
-
-Tout est prêt : brancher l'API réelle ne touche **que** le provider, jamais les vues ni la timeline.
-En 4 étapes :
-
-### 1. Implémenter `GentleMatesAPIProvider.fetchUpcomingMatches()`
-
-Dans [`GentleMatesAPIProvider.swift`](GentleMatesWidgetExtension/Providers/GentleMatesAPIProvider.swift),
-remplacer le `throw APIError.notImplemented` par la vraie requête réseau (un exemple complet est
-déjà en commentaire dans le fichier) :
-
-```swift
-let url = config.baseURL.appendingPathComponent("matches/upcoming")
-var request = URLRequest(url: url)
-if let apiKey = config.apiKey {
-    request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-}
-let (data, response) = try await session.data(for: request)
-// ... vérifier le statut, décoder ...
-```
-
-### 2. Mapper le JSON réel vers `Match`
-
-Définir un type `RemoteMatch` qui colle au **vrai** schéma renvoyé par l'API, puis compléter la
-fonction `map(_:)` (déjà esquissée en commentaire) pour le convertir vers
-[`Match`](GentleMatesWidgetExtension/Models/Match.swift). `Match` est le contrat **stable** côté
-widget : c'est le JSON qui s'adapte à lui, pas l'inverse.
-
-### 3. Renseigner la configuration (non commitée)
-
-1. Copier [`APIConfig.example.plist`](GentleMatesWidgetExtension/APIConfig.example.plist) en
-   `APIConfig.plist` (même dossier).
-2. Renseigner `baseURL` (et `apiKey` si l'API en exige une).
-3. Ajouter `APIConfig.plist` au **Target Membership** de `GentleMatesWidgetExtension` pour qu'il
-   soit embarqué dans le bundle.
-
-> `APIConfig.plist` est déjà **gitignoré** — il ne sera jamais commité.
-
-### 4. Activer le provider API
-
-Dans [`ProviderFactory.swift`](GentleMatesWidgetExtension/Providers/ProviderFactory.swift),
-inverser les deux lignes :
-
-```swift
-static func makeProvider() -> MatchesProvider {
-    // MockMatchesProvider()          // ← commenter
-    GentleMatesAPIProvider()          // ← décommenter
-}
-```
-
-C'est tout. Aucun autre fichier à modifier.
-
----
-
-## Design / Design tokens
-
-Aucun press kit officiel avec codes hex n'a été trouvé : la DA a été extraite manuellement
-(captures de l'app + pipette) et centralisée dans
-[`DesignTokens.swift`](GentleMatesWidgetExtension/DesignTokens.swift). Le widget et l'app
-consomment **exclusivement** ces tokens — aucune couleur ni police en dur ailleurs.
-
-- Couleurs de base (fond, surface, highlight) confirmées depuis un screenshot du planning.
-- Couleur par jeu résolue via [`GameStyle.color(for:)`](GentleMatesWidgetExtension/GameStyle.swift),
-  qui mappe le nom de jeu vers `DesignTokens.GameColor`.
-- **Police :** `fontPrimary = "Poppins"` est un **placeholder** non confirmé. Pour l'activer :
-  ajouter les `.ttf` (`Poppins-Bold.ttf`, etc.) au projet + « Fonts provided by application »
-  dans les Info des deux targets.
-
----
-
-## Périmètre V1
-
-Volontairement limité (voir le brief) :
-
-- ✅ Tailles **small** + **medium**.
-- ✅ **Vue calendrier** en colonnes par jour (logo du jeu + heure 24h), **jusqu'à 4 matchs/jour**,
-  jour courant surligné, sans bandeau.
-- ✅ **2 tailles** : *small* = 3 prochains jours, *medium* = 7 jours (la semaine).
-- ✅ Match **en cours** signalé par une **bordure de la couleur du jeu** (pleine opacité).
-- ℹ️ `StaticConfiguration` (pas d'App Intents : un widget configurable reste bloqué sur son
-  placeholder en simulateur / Appetize — voir la note dans `GentleMatesWidgetBundle.swift`).
-- ❌ Pas de configuration utilisateur (filtre par jeu…).
-- ❌ Pas de Live Activities, pas de deep link vers l'app.
-- ❌ Pas de backend / serveur.
-
----
-
-## Structure du repo
+**SwiftUI · WidgetKit · iOS 17+** — pas de dépendance externe.
 
 ```
 GentleMatesWidget.xcodeproj
-GentleMatesWidget/                     # App conteneur minimale (héberge l'extension)
-│   ├── GentleMatesWidgetApp.swift
-│   └── ContentView.swift
+GentleMatesWidget/                       # app conteneur minimale (héberge l'extension)
 GentleMatesWidgetExtension/
-│   ├── Providers/
-│   │   ├── MatchesProvider.swift       # le protocole
-│   │   ├── MockMatchesProvider.swift   # données factices (actif)
-│   │   ├── GentleMatesAPIProvider.swift# stub API
-│   │   ├── APIConfiguration.swift
-│   │   └── ProviderFactory.swift       # switch mock <-> API (un seul endroit)
-│   ├── Models/
-│   │   └── Match.swift                 # contrat de données
-│   ├── DesignTokens.swift
-│   ├── GameStyle.swift                 # nom de jeu -> token couleur
-│   ├── MatchTimelineProvider.swift     # TimelineProvider WidgetKit
-│   ├── MatchWidgetView.swift           # vue calendrier (small 3 j / medium 7 j)
-│   ├── GentleMatesWidgetBundle.swift   # @main WidgetBundle (widget calendrier)
-│   ├── Info.plist
-│   └── APIConfig.example.plist         # modèle de config (copier en APIConfig.plist)
-└── README.md
+├── Providers/
+│   ├── MatchesProvider.swift            # le protocole (seule dépendance à la donnée)
+│   ├── MockMatchesProvider.swift        # données factices (actif)
+│   ├── GentleMatesAPIProvider.swift     # stub de la vraie API
+│   ├── APIConfiguration.swift           # config baseURL/apiKey (non commitée)
+│   └── ProviderFactory.swift            # switch mock ↔ API (un seul endroit)
+├── Models/Match.swift                   # le contrat de données
+├── DesignTokens.swift                   # couleurs / pictos par jeu, centralisés
+├── GameStyle.swift                      # nom de jeu → couleur / logo
+├── MatchTimelineProvider.swift          # TimelineProvider WidgetKit
+├── MatchWidgetView.swift                # la vue calendrier
+└── GentleMatesWidgetBundle.swift        # @main WidgetBundle
 ```
+
+Un job **GitHub Actions** (`macos`) compile le projet à chaque push : le `project.pbxproj` étant
+écrit à la main, c'est le filet de sécurité qui garantit que le repo reste buildable.
+
+---
+
+## Périmètre & idées pour la suite
+
+Volontairement resserré pour un POC :
+
+- ✅ Vue calendrier, tailles small + medium, jusqu'à 4 matchs/jour, indicateur live.
+- 🔜 Pistes (aussi réclamées dans les avis) : **Live Activities** pour un match en cours,
+  **export ICS** du calendrier, deep link vers l'app, filtre par jeu.
+- ❌ Pas de backend, pas de config utilisateur pour l'instant.
+
+---
+
+## Disclaimer
+
+Projet **non officiel**, fait par un fan, **non affilié à Gentle Mates**. Le nom, le logo et les
+pictogrammes de jeux appartiennent à **Gentle Mates / leurs ayants droit** et ne sont utilisés ici que
+pour cette démo. Les données affichées sont **fictives** (mock). Si un ayant droit souhaite un
+changement, il suffit de me contacter.
+
+*M8 si tu me lis : l'archi est prête, y'a plus qu'à brancher l'API 👀*
