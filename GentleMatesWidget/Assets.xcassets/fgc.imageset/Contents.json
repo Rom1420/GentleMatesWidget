@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "fgc_colored_picto.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -27,6 +27,27 @@ enum GameStyle {
         }
     }
 
+    /// Nom de l'Image Set (Assets.xcassets) du logo coloré d'un jeu, ou `nil` si
+    /// le jeu n'a pas de logo embarqué (la vue retombe alors sur la pastille colorée).
+    /// Les assets sont les variantes "Colored" des `DesignTokens.GamePictogram`,
+    /// importées en SVG (Preserve Vector Data).
+    static func logoAssetName(for game: String) -> String? {
+        switch normalize(game) {
+        case "valorant",
+             "valorantgamechangers",
+             "gamechangers":             return "valorant"
+        case "callofduty", "cod":        return "cod"
+        case "warzone":                  return "warzone"
+        case "fortnite":                 return "fortnite"
+        case "rocketleague", "rl":       return "rl"
+        case "counterstrike2", "cs2":    return "cs2"
+        case "ageofempires", "aoe":      return "aoe"
+        case "teamfighttactics", "tft":  return "tft"
+        case "fightinggames", "fgc":     return "fgc"
+        default:                         return nil
+        }
+    }
+
     /// Enlève espaces, tirets et met en minuscules pour tolérer les variantes
     /// d'écriture ("Rocket League", "rocket-league", "RocketLeague"...).
     private static func normalize(_ game: String) -> String {

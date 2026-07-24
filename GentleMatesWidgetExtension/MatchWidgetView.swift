@@ -133,9 +133,7 @@ private struct GameTag: View {
 
     var body: some View {
         HStack(spacing: 5) {
-            Circle()
-                .fill(GameStyle.color(for: game))
-                .frame(width: 8, height: 8)
+            gameLogo
             Text(game)
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(DesignTokens.todayHighlight)
@@ -146,6 +144,22 @@ private struct GameTag: View {
         .background(
             Capsule().fill(GameStyle.color(for: game).opacity(0.18))
         )
+    }
+
+    /// Logo coloré du jeu (SVG vectoriel embarqué). Fallback sur la pastille
+    /// colorée si le jeu n'a pas d'asset (`logoAssetName` nil).
+    @ViewBuilder
+    private var gameLogo: some View {
+        if let asset = GameStyle.logoAssetName(for: game) {
+            Image(asset)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 14, height: 14)
+        } else {
+            Circle()
+                .fill(GameStyle.color(for: game))
+                .frame(width: 8, height: 8)
+        }
     }
 }
 
