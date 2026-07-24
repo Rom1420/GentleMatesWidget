@@ -1,21 +1,14 @@
 import WidgetKit
 import SwiftUI
 
-/// Style du bandeau du haut.
-enum HeaderStyle {
-    case full      // blason M8 centré + badge LIVE à gauche
-    case liveOnly  // badge LIVE seul (pas de blason)
-    case hidden    // pas de bandeau (max de place pour les matchs)
-}
-
-/// Vue racine : calendrier des matchs, en colonnes par jour.
-/// La taille du widget fixe le nombre de jours (small = 3, sinon 7). Le style de
-/// bandeau et le nombre max de matchs affichés par jour sont fournis par le widget.
+/// Vue racine : calendrier des matchs, en colonnes par jour, **sans bandeau**.
+/// La taille du widget fixe le nombre de jours : small = 3, medium = 7.
+/// Jusqu'à 4 matchs par jour ; un match en cours est signalé par une bordure
+/// de la couleur du jeu (pleine opacité). (Toute couleur passe par `DesignTokens`.)
 struct MatchWidgetView: View {
     @Environment(\.widgetFamily) private var family
     let entry: MatchEntry
-    var headerStyle: HeaderStyle = .full
-    var maxPerDay: Int = 2
+    var maxPerDay: Int = 4
 
     private var dayCount: Int { family == .systemSmall ? 3 : 7 }
 
@@ -25,7 +18,6 @@ struct MatchWidgetView: View {
             matches: entry.matches,
             errorMessage: entry.errorMessage,
             compact: family == .systemSmall,
-            headerStyle: headerStyle,
             maxPerDay: maxPerDay
         )
         .containerBackground(DesignTokens.background, for: .widget)
@@ -39,7 +31,6 @@ private struct CalendarView: View {
     let matches: [Match]
     let errorMessage: String?
     let compact: Bool
-    let headerStyle: HeaderStyle
     let maxPerDay: Int
 
     private let slotSpacing: CGFloat = 3
@@ -51,22 +42,14 @@ private struct CalendarView: View {
         return (0..<dayCount).compactMap { cal.date(byAdding: .day, value: $0, to: start) }
     }
 
-    private var hasLive: Bool { matches.contains { $0.status == .live } }
-
     var body: some View {
-        VStack(alignment: .leading, spacing: compact ? 4 : 6) {
-            if headerStyle != .hidden {
-                WidgetHeader(showLogo: headerStyle == .full, isLive: hasLive, compact: compact)
-            }
-
+        Group {
             if matches.isEmpty {
-                Spacer(minLength: 0)
                 EmptyStateLabel(message: errorMessage ?? "Aucun match à venir")
-                Spacer(minLength: 0)
             } else {
                 GeometryReader { geo in
                     // Hauteur de créneau = espace dispo / nb max par jour → boxes
-                    // uniformes ET qui rentrent, quels que soient la taille et le bandeau.
+                    // uniformes ET qui rentrent, quelle que soit la taille.
                     let available = geo.size.height - dayLabelHeight - slotSpacing
                     let rawHeight = (available - CGFloat(maxPerDay - 1) * slotSpacing) / CGFloat(maxPerDay)
                     let slotHeight = min(38, max(20, rawHeight))
@@ -139,7 +122,8 @@ private struct DayColumn: View {
 }
 
 /// Créneau : logo du jeu au-dessus, heure en dessous (blanc), fond teinté par le jeu.
-/// Hauteur imposée par le parent → toutes les boxes identiques.
+/// Hauteur imposée par le parent → toutes les boxes identiques. Un match en cours
+/// reçoit une bordure de la couleur du jeu (pleine opacité).
 private struct CalendarSlot: View {
     let match: Match
     let height: CGFloat
@@ -178,53 +162,6 @@ private struct CalendarSlot: View {
     }
 }
 
-// MARK: - Header : blason M8 centré + badge LIVE à gauche
-
-private struct WidgetHeader: View {
-    let showLogo: Bool
-    let isLive: Bool
-    let compact: Bool
-
-    var body: some View {
-        ZStack {
-            if showLogo {
-                Image("m8-logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: compact ? 18 : 22)
-                    .frame(maxWidth: .infinity, alignment: .center)
-            }
-
-            HStack {
-                LiveBadge(isLive: isLive)
-                Spacer()
-            }
-        }
-    }
-}
-
-/// Pastille "● LIVE" : pastille + texte en **rouge** quand un match est en cours,
-/// sinon en clair (gris/blanc).
-private struct LiveBadge: View {
-    let isLive: Bool
-
-    private var color: Color {
-        isLive ? .red : DesignTokens.todayHighlight.opacity(0.7)
-    }
-
-    var body: some View {
-        HStack(spacing: 3) {
-            Circle()
-                .fill(color)
-                .frame(width: 6, height: 6)
-            Text("LIVE")
-                .font(.system(size: 10, weight: .heavy))
-                .italic()
-                .foregroundStyle(color)
-        }
-    }
-}
-
 // MARK: - Composants partagés
 
 /// Logo coloré du jeu (SVG vectoriel embarqué). Fallback sur une pastille
@@ -254,26 +191,20 @@ private struct EmptyStateLabel: View {
         Text(message)
             .font(.footnote)
             .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .center)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }
 
 // MARK: - Previews
 
-#Preview("Complet — 7 j", as: .systemMedium) {
+#Preview("Small — 3 jours", as: .systemSmall) {
     GentleMatesWidget()
 } timeline: {
     MatchEntry(date: .now, matches: Match.sampleWeek, errorMessage: nil)
 }
 
-#Preview("Sans bandeau — 4/j", as: .systemMedium) {
-    GentleMatesWidgetNoHeader()
-} timeline: {
-    MatchEntry(date: .now, matches: Match.sampleWeek, errorMessage: nil)
-}
-
-#Preview("LIVE seul — 4/j", as: .systemMedium) {
-    GentleMatesWidgetLiveOnly()
+#Preview("Medium — 7 jours", as: .systemMedium) {
+    GentleMatesWidget()
 } timeline: {
     MatchEntry(date: .now, matches: Match.sampleWeek, errorMessage: nil)
 }

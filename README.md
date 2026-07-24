@@ -66,7 +66,7 @@ la timeline et les vues ne connaissent que ce protocole — jamais une implémen
 | [`Models/Match.swift`](GentleMatesWidgetExtension/Models/Match.swift) | Le contrat de données `Match` (stable) |
 | [`MatchTimelineProvider.swift`](GentleMatesWidgetExtension/MatchTimelineProvider.swift) | `TimelineProvider` WidgetKit |
 | [`GentleMatesWidgetBundle.swift`](GentleMatesWidgetExtension/GentleMatesWidgetBundle.swift) | Le widget calendrier (small = 3 j / medium = 7 j) |
-| [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift) | Vue calendrier SwiftUI (colonnes par jour, header M8 / LIVE) |
+| [`MatchWidgetView.swift`](GentleMatesWidgetExtension/MatchWidgetView.swift) | Vue calendrier SwiftUI (colonnes par jour, sans bandeau) |
 | [`DesignTokens.swift`](GentleMatesWidgetExtension/DesignTokens.swift) | Couleurs / typo centralisées |
 
 **Pas de backend / BFF.** Le calendrier des matchs est une donnée publique (déjà affichée sans
@@ -149,9 +149,10 @@ consomment **exclusivement** ces tokens — aucune couleur ni police en dur aill
 Volontairement limité (voir le brief) :
 
 - ✅ Tailles **small** + **medium**.
-- ✅ **Vue calendrier** en colonnes par jour (logo du jeu + heure), jour courant surligné.
+- ✅ **Vue calendrier** en colonnes par jour (logo du jeu + heure 24h), **jusqu'à 4 matchs/jour**,
+  jour courant surligné, sans bandeau.
 - ✅ **2 tailles** : *small* = 3 prochains jours, *medium* = 7 jours (la semaine).
-- ✅ Header : blason **M8** centré + badge **LIVE** toujours présent (pastille + texte **rouges** quand un match est en cours, clair sinon).
+- ✅ Match **en cours** signalé par une **bordure de la couleur du jeu** (pleine opacité).
 - ℹ️ `StaticConfiguration` (pas d'App Intents : un widget configurable reste bloqué sur son
   placeholder en simulateur / Appetize — voir la note dans `GentleMatesWidgetBundle.swift`).
 - ❌ Pas de configuration utilisateur (filtre par jeu…).
