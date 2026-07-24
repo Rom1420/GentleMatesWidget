@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Xcode version
         run: xcodebuild -version
@@ -45,7 +45,7 @@ jobs:
           zip -r -y "$GITHUB_WORKSPACE/GentleMatesWidget.app.zip" "GentleMatesWidget.app"
 
       - name: Upload artefact .app
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: GentleMatesWidget-simulator-app
           path: GentleMatesWidget.app.zip
