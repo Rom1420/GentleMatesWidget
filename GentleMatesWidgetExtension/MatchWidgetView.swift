@@ -296,25 +296,25 @@ private struct EmptyStateLabel: View {
 // MARK: - Previews
 
 #Preview("Liste", as: .systemMedium) {
-    GentleMatesWidget()
+    GentleMatesListWidget()
 } timeline: {
     MatchEntry(date: .now, matches: Match.sampleWeek, span: .liste, errorMessage: nil)
 }
 
 #Preview("Calendrier 3j", as: .systemMedium) {
-    GentleMatesWidget()
+    GentleMatesCalendar3Widget()
 } timeline: {
     MatchEntry(date: .now, matches: Match.sampleWeek, span: .troisJours, errorMessage: nil)
 }
 
-#Preview("Calendrier 7j", as: .systemMedium) {
-    GentleMatesWidget()
+#Preview("Calendrier 7j", as: .systemLarge) {
+    GentleMatesCalendar7Widget()
 } timeline: {
     MatchEntry(date: .now, matches: Match.sampleWeek, span: .septJours, errorMessage: nil)
 }
 
 #Preview("Small", as: .systemSmall) {
-    GentleMatesWidget()
+    GentleMatesListWidget()
 } timeline: {
     MatchEntry(date: .now, matches: Match.sampleWeek, span: .liste, errorMessage: nil)
 }
